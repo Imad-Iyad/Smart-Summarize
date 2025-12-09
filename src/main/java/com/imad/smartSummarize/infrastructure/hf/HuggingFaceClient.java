@@ -29,27 +29,21 @@ public class HuggingFaceClient {
 
     public String summarize(String text, SummaryLength length) {
 
-        // 1) حماية من null أو نص فاضي
         if (text == null || text.isBlank()) {
             throw new IllegalArgumentException("Text must not be empty");
         }
 
-        // 2) إذا المستخدم ما حدّد length → نخلي MEDIUM
         SummaryLength effectiveLength = (length != null) ? length : SummaryLength.MEDIUM;
 
-        // 3) نحدد إعدادات التلخيص حسب الطول
         Map<String, Object> parameters = buildParameters(effectiveLength);
 
-        // 4) JSON body اللي نرسله لـ Hugging Face
         Map<String, Object> body = new HashMap<>();
         body.put("inputs", text);
         body.put("parameters", parameters);
 
         try {
-            // 5) نبني WebClient
             WebClient client = webClientBuilder.build();
 
-            // 6) نعمل POST request
             List<Map<String, Object>> response = client.post()
                     .uri(modelUrl)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
@@ -59,12 +53,10 @@ public class HuggingFaceClient {
                     .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
                     .block();
 
-            // 8) تحقق من الرد
             if (response == null || response.isEmpty()) {
                 throw new RuntimeException("Empty response from Hugging Face");
             }
 
-            // 9) نجيب summary_text من الرد
             Object summaryText = response.get(0).get("summary_text");
             if (summaryText == null) {
                 throw new RuntimeException("No summary_text returned from Hugging Face");
@@ -78,7 +70,6 @@ public class HuggingFaceClient {
         }
     }
 
-    // ========== إعدادات طول التلخيص ==========
     private Map<String, Object> buildParameters(SummaryLength length) {
 
         Map<String, Object> params = new HashMap<>();
@@ -98,7 +89,6 @@ public class HuggingFaceClient {
             }
         }
 
-        // يمنع التكرار الحرفي
         params.put("no_repeat_ngram_size", 3);
 
         return params;
