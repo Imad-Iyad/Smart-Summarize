@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartSummarize</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background: #0b1220; }
+        .card { border: 0; border-radius: 16px; }
+        .muted { color: #94a3b8; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+
+        .footer {
+            margin-top: 28px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(148, 163, 184, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            background: rgba(15, 23, 42, 0.35);
+            transition: 0.2s ease;
+            text-decoration: none;
+        }
+
+        .social-icons a:hover {
+            transform: translateY(-2px);
+            border-color: rgba(148, 163, 184, 0.6);
+        }
+
+        .social-icons svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body class="text-light">
+<div class="container py-5" style="max-width: 900px;">
+
+    <div class="mb-4">
+        <h1 class="fw-bold">SmartSummarize</h1>
+        <p class="muted">Paste text, choose length, and generate a summary using Hugging Face.</p>
+    </div>
+
+    <div class="card bg-dark text-light p-4 mb-4">
+        <label class="form-label fw-semibold">Text</label>
+        <textarea id="textInput"
+                  class="form-control bg-black text-light border-secondary"
+                  rows="8"
+                  placeholder="Paste your text here..."></textarea>
+
+        <div class="d-flex gap-3 align-items-end mt-3 flex-wrap">
+            <div>
+                <label class="form-label fw-semibold">Length</label>
+                <select id="lengthSelect" class="form-select bg-black text-light border-secondary">
+                    <option value="SHORT">SHORT</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LONG">LONG</option>
+                </select>
+            </div>
+
+            <button id="summarizeBtn" class="btn btn-primary px-4">
+                Summarize
+            </button>
+
+            <div id="status" class="muted"></div>
+        </div>
+    </div>
+
+    <div class="card bg-dark text-light p-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="m-0">Result</h4>
+            <button id="copyBtn" class="btn btn-outline-light btn-sm" disabled>Copy</button>
+        </div>
+
+        <div id="meta" class="muted small mb-2"></div>
+        <pre id="summaryOutput" class="m-0"></pre>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer muted">
+        <div>
+            Developed & Designed by
+            <strong class="text-light">Imad I. Abu Halib</strong>
+        </div>
+
+        <div class="social-icons d-flex gap-2">
+            <!-- GitHub -->
+            <a href="https://github.com/Imad-Iyad/Smart-Summarize" target="_blank" title="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 .5C5.73.5.75 5.6.75 12c0 5.1 3.29 9.43 7.86 10.96.58.11.79-.26.79-.57v-2.1c-3.2.7-3.87-1.58-3.87-1.58-.53-1.36-1.28-1.72-1.28-1.72-1.04-.73.08-.72.08-.72 1.15.08 1.76 1.2 1.76 1.2 1.02 1.78 2.68 1.27 3.33.97.1-.76.4-1.27.72-1.56-2.55-.3-5.23-1.31-5.23-5.83 0-1.29.45-2.35 1.2-3.18-.12-.3-.52-1.53.12-3.18 0 0 .98-.32 3.2 1.21.93-.26 1.92-.39 2.91-.4.99.01 1.98.14 2.91.4 2.22-1.53 3.2-1.21 3.2-1.21.64 1.65.24 2.88.12 3.18.75.83 1.2 1.89 1.2 3.18 0 4.54-2.69 5.52-5.25 5.82.41.36.78 1.08.78 2.18v3.23c0 .32.21.69.8.57 4.56-1.53 7.85-5.86 7.85-10.96C23.25 5.6 18.27.5 12 .5z"/>
+                </svg>
+            </a>
+
+            <!-- LinkedIn -->
+            <a href="https://www.linkedin.com/in/YOUR-LINKEDIN-USERNAME/" target="_blank" title="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.15 1.45-2.15 2.94v5.67H9.33V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM3.56 20.45h3.56V9H3.56v11.45z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_PATH = "http://localhost:8081/api/summaries";
+
+    const textInput = document.getElementById("textInput");
+    const lengthSelect = document.getElementById("lengthSelect");
+    const summarizeBtn = document.getElementById("summarizeBtn");
+    const statusEl = document.getElementById("status");
+    const summaryOutput = document.getElementById("summaryOutput");
+    const metaEl = document.getElementById("meta");
+    const copyBtn = document.getElementById("copyBtn");
+
+    function setLoading(isLoading) {
+        summarizeBtn.disabled = isLoading;
+        summarizeBtn.textContent = isLoading ? "Summarizing..." : "Summarize";
+        statusEl.textContent = isLoading ? "Calling API..." : "";
+    }
+
+    copyBtn.addEventListener("click", async () => {
+        const text = summaryOutput.textContent || "";
+        if (!text.trim()) return;
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => copyBtn.textContent = "Copy", 1200);
+    });
+
+    summarizeBtn.addEventListener("click", async () => {
+        const text = textInput.value.trim();
+        const length = lengthSelect.value;
+
+        summaryOutput.textContent = "";
+        metaEl.textContent = "";
+        copyBtn.disabled = true;
+        statusEl.textContent = "";
+
+        if (!text) {
+            statusEl.textContent = "Please paste some text first.";
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const res = await fetch(API_PATH, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text, length })
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`API Error (${res.status}): ${errText}`);
+            }
+
+            const data = await res.json();
+            summaryOutput.textContent = data.summary || "(No summary returned)";
+            metaEl.textContent =
+                `ID: ${data.id} • Original length: ${data.originalTextLength} • Created: ${data.createdAt}`;
+            copyBtn.disabled = false;
+        } catch (err) {
+            statusEl.textContent = err.message;
+        } finally {
+            setLoading(false);
+        }
+    });
+</script>
+</body>
+</html>
